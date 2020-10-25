@@ -1,0 +1,10 @@
+version: '3.1'
+
+services:
+
+  calcServer:
+          build:
+              context: .
+              dockerfile: Dockerfile.caclserver
+          restart: always
+          container_name: caclserver
