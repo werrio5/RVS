@@ -6,8 +6,6 @@
 package com.mycompany.calcserver;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,7 +13,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +23,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 
 /**
  *
@@ -47,25 +43,7 @@ public static void main(String[] args) throws Throwable {
     }
 
 private static void register(String[] args) throws IOException{
-    try {
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPost request = new HttpPost("http://"+args[0]+"/register");
-        StringBuilder json = new StringBuilder();
-        json.append("{");
-        json.append("\"ip\":\""+args[1]+"\",");
-        json.append("\"port\":"+args[2]);
-        json.append("}");
-        
-        request.addHeader("accept", "*/*");
-        request.addHeader("content-type", "application/json");
-        request.setEntity(new StringEntity(json.toString()));
-        
-        HttpResponse response = httpClient.execute(request);
-//        String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-//        System.out.println("Response body: " + responseBody);
-    } catch (UnsupportedEncodingException ex) {
-        Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
-    }
+        new Thread(new RegisterThread(args[0], args[1], Integer.valueOf(args[2]))).start();
 }
 
 private static List<Boolean> localCalc(List<Long> nums) {
