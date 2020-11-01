@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -27,32 +29,73 @@ public class CalcResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<List<Long>> calc(List<Long> data) {
+    public List<Boolean> calc(List<Long> data) {
         
         //под результаты
         List<Boolean> results = new ArrayList<>();
         
         //разделить данные между активными клиентами
-        List<List<Long>> splitData = redirectData(data);   
+        List<Boolean> splitData = redirectData(data);           
         
         return splitData;
     }
     
-    private List<List<Long>> redirectData(List<Long> data){
-        //активные соединения
-        Set<Client> activeClients = GreetingResource.getActiveClients().keySet();
-        int activeClientsount = activeClients.size();
+    private List<Boolean> redirectData(List<Long> data){
         
-        //splitData
-        List<List<Long>> splitData = splitData(activeClientsount, data);
+        List<Long> notSentData = data;
+        boolean allDataSent = false;
+        List<Boolean> results = new LinkedList<>();
         
-        //
-        List<Thread> threadPool = new LinkedList<>();
-        for(Client c:activeClients){
-            //threadPool.add(new Thread(target));
+        while(!allDataSent){
+            
+            //активные соединения
+            Set<Client> activeClients = GreetingResource.getActiveClients().keySet();
+            Client[] clients = (Client[]) activeClients.toArray();
+            int activeClientsount = activeClients.size();
+
+            //splitData
+            List<List<Long>> splitData = splitData(activeClientsount, notSentData);
+
+            //dataStorage
+            DataStorage dataStorage = new DataStorage(splitData, activeClients, data.size());
+
+            //start threads
+            List<CalcThread> threadPool = new LinkedList<>();
+            for(int i=0; i<activeClientsount; i++){
+                threadPool.add(new CalcThread(clients[i].getIp(), clients[i].getPort(), splitData.get(i), dataStorage));
+                threadPool.get(i).run();
+            }
+
+            //ожидание завершения потоков
+            while(true){
+                //wait
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(CalcResource.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                boolean allThreadsDown = true;
+                for(CalcThread thread:threadPool){
+                    if(!thread.isThreadStoped()){
+                        allThreadsDown = false;
+                        break;
+                    }
+                }
+                
+                if(allThreadsDown) break;
+            }
+            
+            if(dataStorage.dataOk()) {
+                allDataSent = true;
+                results = dataStorage.getData();
+            }
+            else{
+                notSentData = dataStorage.getUnsentData();
+            }
         }
         
-        return splitData;
+        return results;
     }
     
     private List<List<Long>> splitData(int activeClientsount, List<Long> data){

@@ -15,10 +15,6 @@ import javax.ws.rs.core.Response;
 @Path("/register")
 public class GreetingResource {
 
-//    public GreetingResource() {
-//        new Thread(new DeactivationThread()).run();
-//    }
-    
     private static Map<Client,Long> clients = Collections.synchronizedMap(new HashMap<Client,Long>());    
 
     @POST
