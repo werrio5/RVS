@@ -33,6 +33,7 @@ public class RegisterThread implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("register thread started");
         while (true) {
             try {
                 HttpClient httpClient = HttpClientBuilder.create().build();
