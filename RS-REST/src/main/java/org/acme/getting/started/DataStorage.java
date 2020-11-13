@@ -44,7 +44,11 @@ public class DataStorage {
     }
     
     private int getClientIndex(CalcThread thread){
-        Client[] clients = (Client[]) activeClients.toArray();
+        Client[] clients = new Client[activeClients.size()];
+        for(int i=0;i<activeClients.size();i++){
+            clients[i]=(Client) activeClients.toArray()[i];
+        }
+            
         for(int i=0;i<activeClients.size();i++){
             if(clients[i].getIp().equals(thread.getIp()) & clients[i].getPort() == thread.getPort()){
                 return i;

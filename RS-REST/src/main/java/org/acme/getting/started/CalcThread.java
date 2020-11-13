@@ -59,14 +59,16 @@ public class CalcThread implements Runnable {
             HttpClient httpClient = HttpClientBuilder.create().build();
             HttpPost request = new HttpPost("http://" + ip + ":" + String.valueOf(port) + "/calc");
             StringBuilder json = new StringBuilder();
-            json.append("{[");
-            for (Long value : data) {
-                json.append(data);
-                if (data.indexOf(value) != data.size() - 1) {
-                    json.append(",");
-                }
-            }
-            json.append("]}");
+//            json.append("[");
+//            for (Long value : data) {
+//                json.append(value);
+//                if (data.indexOf(value) != data.size() - 1) {
+//                    json.append(",");
+//                }
+//            }
+//            json.append("]");
+            json.append(data);
+            System.out.println(json.toString());
 
             request.addHeader("accept", "*/*");
             request.addHeader("content-type", "application/json");
@@ -74,6 +76,8 @@ public class CalcThread implements Runnable {
 
             HttpResponse response = httpClient.execute(request);
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            
+            System.out.println(responseBody);
             
             List<Boolean> results = getDataFromJson(responseBody);
             resultReceived = checkReceivedData(results,data.size());
@@ -103,10 +107,9 @@ public class CalcThread implements Runnable {
     }
     
     private String removeBrackets(String json){
-        String result = json.replaceAll("{", "");
-        result = result.replaceAll("}", "");
-        result = result.replaceAll("[", "");
-        result = result.replaceAll("]", "");
+        System.out.println("json="+json);
+        String result = json.substring(1, json.length()-1);
+        System.out.println(result);
         return result;
     }
     

@@ -48,7 +48,7 @@ public class CalcResource {
         boolean allDataSent = false;
         List<Boolean> results = new LinkedList<>();
         
-        while(!allDataSent){
+        //while(!allDataSent){
             //активные соединения
             Map<Client,Long> map = GreetingResource.getActiveClients();
             Set<Client> activeClients = new HashSet<>((Set<Client>)map.keySet());
@@ -58,9 +58,17 @@ public class CalcResource {
             }
             
             int activeClientsount = activeClients.size();
-            
+            if(activeClientsount == 0) return results;
+            //int activeClientsount = 2;
+
             //splitData
             List<List<Long>> splitData = splitData(activeClientsount, notSentData);
+            for(int i=0;i<splitData.size();i++){
+                for(int j=0;j<splitData.get(i).size();j++){
+                    System.out.print(splitData.get(i).get(j));
+                }
+                System.out.println("");
+            }
 
             //dataStorage
             DataStorage dataStorage = new DataStorage(splitData, activeClients, data.size());
@@ -68,29 +76,41 @@ public class CalcResource {
             //start threads
             List<CalcThread> threadPool = new LinkedList<>();
             for(int i=0; i<activeClientsount; i++){
+                System.out.println("thread "+i);
                 threadPool.add(new CalcThread(clients[i].getIp(), clients[i].getPort(), splitData.get(i), dataStorage));
                 threadPool.get(i).run();
             }
+            System.out.println("exit threads");
+//              //send data
+//              for(int i=0; i<activeClientsount; i++){
+//                  List<Boolean> res = TransmitData.sendRequest(clients[i], splitData.get(i));
+//              }
 
-            //ожидание завершения потоков
-            while(true){
-                //wait
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(CalcResource.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                boolean allThreadsDown = true;
-                for(CalcThread thread:threadPool){
-                    if(!thread.isThreadStoped()){
-                        allThreadsDown = false;
-                        break;
-                    }
-                }
-                
-                if(allThreadsDown) break;
-            }
+//            //ожидание завершения потоков
+//            while(true){
+//                //wait
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException ex) {
+//                    Logger.getLogger(CalcResource.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                
+//                boolean allThreadsDown = true;
+//                for(CalcThread thread:threadPool){
+//                    if(!thread.isThreadStoped()){
+//                        allThreadsDown = false;
+//                        break;
+//                    }
+//                }
+//                
+//                if(allThreadsDown) {
+//                    System.out.println("all threads stopped");
+//                    break;
+//                }
+//                else{
+//                    System.out.println("error");
+//                }
+//            }
             
             if(dataStorage.dataOk()) {
                 allDataSent = true;
@@ -99,7 +119,7 @@ public class CalcResource {
             else{
                 notSentData = dataStorage.getUnsentData();
             }
-        }
+       // }
         
         return results;
     }

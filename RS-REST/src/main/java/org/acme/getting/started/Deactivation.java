@@ -25,6 +25,7 @@ public class Deactivation{
 
             for (Client client : activeClients.keySet()) {
                 long diff = System.currentTimeMillis() - activeClients.get(client);
+                //System.out.println(diff);
                 if (diff > 5000) {
                     disconnectedClients.add(client);
                 }
@@ -32,8 +33,8 @@ public class Deactivation{
             for (Client client : disconnectedClients) {
                 activeClients.remove(client);
             }
-            System.out.println("clients = "+activeClients.size());
-            System.out.println("clients disconencted = "+disconnectedClients.size());
+            //System.out.println("clients = "+activeClients.size());
+            //System.out.println("clients disconencted = "+disconnectedClients.size());
         }    
 
 }
