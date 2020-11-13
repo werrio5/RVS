@@ -30,11 +30,11 @@ public class RegisterThread{
         while (true) {
             try {
                 HttpClient httpClient = HttpClientBuilder.create().build();
-                HttpPost request = new HttpPost("http://" + "192.168.1.13:8080" + "/register");
+                HttpPost request = new HttpPost("http://" + "192.168.1.4:8080" + "/register");
                 StringBuilder json = new StringBuilder();
                 json.append("{");
                 json.append("\"ip\":\"" + "192.168.1.4" + "\",");
-                json.append("\"port\":" + 8080);
+                json.append("\"port\":" + 55552);
                 json.append("}");
 
                 request.addHeader("accept", "*/*");
@@ -45,14 +45,14 @@ public class RegisterThread{
 //        String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 //        System.out.println("Response body: " + responseBody);
             } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
-                Logger.getLogger(RegisterThread.class.getName()).log(Level.SEVERE, null, ex);
+               // Logger.getLogger(RegisterThread.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
-                Logger.getLogger(RegisterThread.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(RegisterThread.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

@@ -43,7 +43,9 @@ public static List<Boolean> localCalc(List<Long> nums) {
         System.err.println("вычисление на этом компьютере");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         for (long num : nums) {
-            result.add(calc(num));
+            boolean v = calc(num);
+            System.out.println(num+" - "+v);
+            result.add(v);
         }
         Timestamp timestamp2 = new Timestamp(System.currentTimeMillis());
         long diff = timestamp2.getTime() - timestamp.getTime();
