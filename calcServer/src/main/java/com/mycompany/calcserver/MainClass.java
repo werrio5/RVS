@@ -24,21 +24,21 @@ public class MainClass {
         
     //args[0] - server ip:port
     //args[1] this pc ip
-public static void main(String[] args) throws Throwable {
-        register(args);
-        ServerSocket ss = new ServerSocket(8080);
-        while (true) {
-            Socket s = ss.accept();
-            System.err.println("Client accepted");
-            new Thread(new SocketProcessor(s)).start();
-        }
-    }
+//public static void main(String[] args) throws Throwable {
+//        register(args);
+//        ServerSocket ss = new ServerSocket(8080);
+//        while (true) {
+//            Socket s = ss.accept();
+//            System.err.println("Client accepted");
+//            new Thread(new SocketProcessor(s)).start();
+//        }
+//    }
+//
+//private static void register(String[] args) throws IOException{
+//        new Thread(new RegisterThread(args[0], args[1], Integer.valueOf(args[2]))).start();
+//}
 
-private static void register(String[] args) throws IOException{
-        new Thread(new RegisterThread(args[0], args[1], Integer.valueOf(args[2]))).start();
-}
-
-private static List<Boolean> localCalc(List<Long> nums) {
+public static List<Boolean> localCalc(List<Long> nums) {
         List<Boolean> result = new LinkedList<>();
         System.err.println("вычисление на этом компьютере");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());

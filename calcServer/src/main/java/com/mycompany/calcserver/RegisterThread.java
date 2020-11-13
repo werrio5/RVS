@@ -5,10 +5,12 @@
  */
 package com.mycompany.calcserver;
 
+import io.quarkus.scheduler.Scheduled;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.context.ApplicationScoped;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -19,29 +21,20 @@ import org.apache.http.impl.client.HttpClientBuilder;
  *
  * @author pavel
  */
-public class RegisterThread implements Runnable {
+@ApplicationScoped
+public class RegisterThread{
 
-    private final String serverIp;
-    private final String ip;
-    private final int port;
-
-    public RegisterThread(String serverIp, String ip, int port) {
-        this.serverIp = serverIp;
-        this.ip = ip;
-        this.port = port;
-    }
-
-    @Override
-    public void run() {
+    @Scheduled(every="1s")
+    public void register() {
         System.out.println("register thread started");
         while (true) {
             try {
                 HttpClient httpClient = HttpClientBuilder.create().build();
-                HttpPost request = new HttpPost("http://" + serverIp + "/register");
+                HttpPost request = new HttpPost("http://" + "192.168.1.13:8080" + "/register");
                 StringBuilder json = new StringBuilder();
                 json.append("{");
-                json.append("\"ip\":\"" + ip + "\",");
-                json.append("\"port\":" + port);
+                json.append("\"ip\":\"" + "192.168.1.4" + "\",");
+                json.append("\"port\":" + 8080);
                 json.append("}");
 
                 request.addHeader("accept", "*/*");
