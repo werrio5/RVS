@@ -77,18 +77,20 @@ public class MainClass {
     }
 
     private static void sendRequest() {
-        Map<Integer, Long> arguments = new HashMap<>();
-        for (int i = 0; i < nums.length; i++) {
-            arguments.put(i, nums[i]);
-        }
+
         HttpClient httpClient = HttpClientBuilder.create().build();
         try {
-            HttpPost request = new HttpPost("http://192.168.1.7:8080/register");
+            HttpPost request = new HttpPost("http://192.168.1.4:8080/calc");
             StringBuilder json = new StringBuilder();
-            json.append("{");
-            json.append("\"ip\":\"ipaddr\",");
-            json.append("\"port\":123");
-            json.append("}");
+            json.append("[");
+            for (int i=0;i<nums.length;i++) {
+                json.append(nums[i]);
+                if (i != nums.length - 1) {
+                    json.append(",");
+                }
+            }
+            json.append("]");            
+            System.out.println(json);
 
             request.addHeader("accept", "*/*");
             request.addHeader("content-type", "application/json");
