@@ -15,7 +15,8 @@ import javax.ws.rs.core.Response;
 @Path("/register")
 public class GreetingResource {
 
-    private static Map<Client,Long> clients = Collections.synchronizedMap(new HashMap<Client,Long>());    
+    //private static Map<Client,Long> clients = Collections.synchronizedMap(new HashMap<Client,Long>());    
+    private static Map<Client,Long> clients = new HashMap<Client,Long>();    
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

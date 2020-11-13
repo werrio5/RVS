@@ -5,6 +5,7 @@
  */
 package org.acme.getting.started;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -16,11 +17,11 @@ import java.util.Set;
 public class DataStorage {
     
     private final List<List<Long>> splitData;
-    private final Set<Client> activeClients;
+    private final Collection<Client> activeClients;
     
     private Boolean[] results;
 
-    DataStorage(List<List<Long>> splitData, Set<Client> activeClients, int dataLength) {
+    DataStorage(List<List<Long>> splitData, Collection<Client> activeClients, int dataLength) {
         this.splitData = splitData;
         this.activeClients = activeClients;
         results = new Boolean[dataLength];

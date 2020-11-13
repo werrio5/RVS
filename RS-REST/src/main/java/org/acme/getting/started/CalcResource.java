@@ -6,8 +6,10 @@
 package org.acme.getting.started;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +37,7 @@ public class CalcResource {
         List<Boolean> results = new ArrayList<>();
         
         //разделить данные между активными клиентами
-        List<Boolean> splitData = redirectData(data);           
+        List<Boolean> splitData = redirectData(data);  
         
         return splitData;
     }
@@ -47,12 +49,16 @@ public class CalcResource {
         List<Boolean> results = new LinkedList<>();
         
         while(!allDataSent){
-            
             //активные соединения
-            Set<Client> activeClients = GreetingResource.getActiveClients().keySet();
-            Client[] clients = (Client[]) activeClients.toArray();
+            Map<Client,Long> map = GreetingResource.getActiveClients();
+            Set<Client> activeClients = new HashSet<>((Set<Client>)map.keySet());
+            Client[] clients = new Client[activeClients.size()];
+            for(int i=0;i<activeClients.size();i++){
+                clients[i]=(Client) activeClients.toArray()[i];
+            }
+            
             int activeClientsount = activeClients.size();
-
+            
             //splitData
             List<List<Long>> splitData = splitData(activeClientsount, notSentData);
 
