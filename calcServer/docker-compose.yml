@@ -1,0 +1,13 @@
+  
+version: '3.1'
+
+services:
+
+  calcserver:
+          build:
+              context: .
+              dockerfile: Dockerfile.calcserver
+          restart: always
+          container_name: calcserver
+          ports:
+            - 8080:8080
