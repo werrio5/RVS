@@ -1,0 +1,13 @@
+  
+version: '3.1'
+
+services:
+
+  rshost:
+          build:
+              context: .
+              dockerfile: Dockerfile.rshost
+          restart: always
+          container_name: rshost
+          ports:
+            - 8080:8080
