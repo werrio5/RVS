@@ -5,12 +5,16 @@
  */
 package org.acme.getting.started;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
@@ -19,6 +23,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.util.EntityUtils;
 
 /**
  *
@@ -71,24 +83,34 @@ public class CalcResource {
             }
 
             //dataStorage
-            DataStorage dataStorage = new DataStorage(splitData, activeClients, data.size());
+            DataStorage dataStorage = new DataStorage(activeClients.size(), data.size());
 
-            //start threads
-            List<CalcThread> threadPool = new LinkedList<>();
-            for(int i=0; i<activeClientsount; i++){
-                System.out.println("thread "+i);
-                threadPool.add(new CalcThread(clients[i].getIp(), clients[i].getPort(), splitData.get(i), dataStorage));
-                threadPool.get(i).run();
+            sendAll(clients,splitData,dataStorage);
+            while(!dataStorage.dataOk()){
+            try {
+                //dataStorage.print();
+                System.out.println("data ok="+dataStorage.dataOk());
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CalcResource.class.getName()).log(Level.SEVERE, null, ex);
+            }            
             }
-            System.out.println("exit threads");
-//              //send data
-//              for(int i=0; i<activeClientsount; i++){
-//                  List<Boolean> res = TransmitData.sendRequest(clients[i], splitData.get(i));
-//              }
-
+            results = dataStorage.getData();
+            //start threads
+//            List<CalcThread> threadPool = new LinkedList<>();
+//            for(int i=0; i<activeClientsount; i++){
+//                System.out.println("thread "+i);
+//                threadPool.add(new CalcThread(clients[i].getIp(), clients[i].getPort(), splitData.get(i), dataStorage));
+//                threadPool.get(i).run();
+//                System.out.println(i+" started");
+//            }
+//            System.out.println("exit thread starting");
+//
+//
 //            //ожидание завершения потоков
 //            while(true){
 //                //wait
+//                System.out.println("waiting for all threads to stop");
 //                try {
 //                    Thread.sleep(100);
 //                } catch (InterruptedException ex) {
@@ -98,8 +120,8 @@ public class CalcResource {
 //                boolean allThreadsDown = true;
 //                for(CalcThread thread:threadPool){
 //                    if(!thread.isThreadStoped()){
+//                        System.out.println("thread"+threadPool.indexOf(thread)+" is running");
 //                        allThreadsDown = false;
-//                        break;
 //                    }
 //                }
 //                
@@ -107,18 +129,17 @@ public class CalcResource {
 //                    System.out.println("all threads stopped");
 //                    break;
 //                }
-//                else{
-//                    System.out.println("error");
-//                }
 //            }
-            
-            if(dataStorage.dataOk()) {
-                allDataSent = true;
-                results = dataStorage.getData();
-            }
-            else{
-                notSentData = dataStorage.getUnsentData();
-            }
+//            
+//            System.out.println("data check");
+//            if(dataStorage.dataOk()) {
+//                System.out.println("data ok");
+//                allDataSent = true;
+//                results = dataStorage.getData();
+//            }
+//            else{
+//                notSentData = dataStorage.getUnsentData();
+//            }
        // }
         
         return results;
@@ -138,4 +159,74 @@ public class CalcResource {
         return splitData;
     }
     
+    
+    private void sendAll(Client[] clients, List<List<Long>> data, DataStorage dataStorage){
+        CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
+        httpclient.start();
+        for(int i=0;i<clients.length;i++){
+            String url = "http://" + clients[i].getIp() + ":" + clients[i].getPort()+ "/calc";
+            HttpPost request = new HttpPost(url);
+            attachHeaders(request, data.get(i));
+            Future<HttpResponse> future = httpclient.execute(request, new AsyncResponse(i,dataStorage){
+                @Override
+                public void completed(HttpResponse t) {
+
+                        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                        System.out.println("completed");
+                        System.out.println(t.getEntity().toString());
+                        try {
+                            String responseBody = EntityUtils.toString(t.getEntity(), StandardCharsets.UTF_8);
+                            System.out.println(responseBody);                            
+                            List<Boolean> results = getDataFromJson(responseBody);
+                            System.out.println("i="+i);
+                            dataStorage.storeData(results, i);
+                    } catch (IOException | ParseException ex) {
+                        Logger.getLogger(CalcResource.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                        
+                }
+
+                @Override
+                public void failed(Exception excptn) {
+                    //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    System.out.println("failed");
+                }
+
+                @Override
+                public void cancelled() {
+                    //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    System.out.println("cancelled");
+                }                
+            });
+        }
+    }
+    
+    private void attachHeaders(HttpPost request, List<Long> data){
+        request.addHeader("accept", "*/*");
+        request.addHeader("content-type", "application/json");
+        StringBuilder json = new StringBuilder();
+        json.append(data);
+        try {
+            request.setEntity(new StringEntity(json.toString()));
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(CalcResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        private List<Boolean> getDataFromJson(String json){
+        List<Boolean> data = new LinkedList<>();
+        String removedBrackets = removeBrackets(json);
+        String[] values = removedBrackets.split(",");
+        for(String s:values){
+            data.add(Boolean.valueOf(s));
+        }
+
+        return data;
+    }
+    
+    private String removeBrackets(String json){
+        System.out.println("json="+json);
+        String result = json.substring(1, json.length()-1);
+        System.out.println(result);
+        return result;
+    }
 }
